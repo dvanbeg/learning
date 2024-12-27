@@ -14,11 +14,11 @@ public class drawEG {
 		int keyOff=(int)Math.round(width * 0.66);
 		double toRadian = Math.PI / 2 / 99 ;
 		// enveloppe initiale
-		int R1=50;
+		int R1=55;
 		int L1=99;
-		int R2=30;
+		int R2=35;
 		int L2=99;
-		int R3=99;
+		int R3=15;
 		int L3=99;
 		int R4=99;
 		int L4=0;
@@ -74,15 +74,45 @@ public class drawEG {
 			double deltaY = (L2-y[2]); // positif ou négatif
 			double incY = deltaX * Math.tan(tetha); //
 			if(incY > deltaY) {
-				// on atteind le niveau avant keyOff en cos(R2)
-				x[3]=(int)Math.round(deltaX * Math.cos(tetha));
+				// on atteint le niveau avant keyOff en cos(R2)
+				x[3]=x[2]+(int)Math.round(deltaX * Math.cos(tetha));
 				y[3]=L2;
 			} else {
-				// on atteind keyOff avant le niveau en sin(R2)
+				// on atteint keyOff avant le niveau en sin(R2)
 				x[3]=keyOff;
-				y[3]=(int)Math.round(deltaX * Math.sin(tetha));
+				y[3]=x[2]+(int)Math.round(deltaX * Math.sin(tetha));
 			}
 		}
+		// calcul du point 5
+		if(R3 > 98) {
+			// on va à la verticale, même si L2 n'est pas atteint
+			x[4]=x[3];
+			y[4]=L3;
+		} else if(R3 < 1) {
+			// on reste à l'horizontale, idem, même si L2 n'est pas encore atteint
+			x[4]=keyOff;
+			y[4]=y[3];
+		} else if(x[3] >= keyOff) {
+			// la touche est déjà relâchée
+			x[4]=x[3];
+			y[4]=y[3];
+		} else {
+			// OK, on doit tenir compte de R3
+			double tetha = R3 * toRadian;
+			double deltaX = keyOff-x[3]; // toujours positif
+			double deltaY = (L3-y[3]); // positif ou négatif
+			double incY = deltaX * Math.tan(tetha); //
+			if(incY > deltaY) {
+				// on atteind le niveau avant keyOff en cos(R3)
+				x[4]=x[3]+(int)Math.round(deltaX * Math.cos(tetha));
+				y[4]=L3;
+			} else {
+				// on atteind keyOff avant le niveau en sin(R3)
+				x[4]=keyOff;
+				y[4]=x[3]+(int)Math.round(deltaX * Math.sin(tetha));
+			}
+		}		
+		
 		System.out.println("fin");
 	}
 }
