@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Interactive ADSR Envelope Visualization</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			height: 100vh;
+			margin: 0;
+			background-color: LightGrey;
+		}
+		canvas {
+			border-style: solid;
+			border-width: 1px;
+			background-color: LightGrey;
+		}
+		.controls {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			margin-top: 10px;
+		}
+		.control-group {
+			margin: 5px;
+		}
+		.control-group label {
+			display: block;
+			text-align: center;
+		}
+	</style>
+</head>
+<body>
+<p/>
+	<canvas id="adsrCanvas" width="800" height="400"></canvas>
+	<div class="controls">
+		<div class="control-group"><label for="r1Input">R1</label><input type="text" id="r1Input" readonly></div>
+		<div class="control-group"><label for="r2Input">R2</label><input type="text" id="r2Input" readonly></div>
+		<div class="control-group"><label for="r3Input">R3</label><input type="text" id="r3Input" readonly></div>
+		<div class="control-group"><label for="r4Input">R4</label><input type="text" id="r4Input" readonly></div>
+		<div class="control-group"><label for="l1Input">L1</label><input type="text" id="l1Input" readonly></div>
+		<div class="control-group"><label for="l2Input">L2</label><input type="text" id="l2Input" readonly></div>
+		<div class="control-group"><label for="l3Input">L3</label><input type="text" id="l3Input" readonly></div>
+		<div class="control-group"><label for="l4Input">L4</label><input type="text" id="l4Input" readonly></div>
+	</div>
+	<script>
+		const canvas = document.getElementById('adsrCanvas');
+		const ctx = canvas.getContext('2d');
+		// Canvas dimensions
+		const width = canvas.width;
+		const height = canvas.height;
+		const toRadian = Math.PI()/198;
+
+		// ADSR envelope parameters
+		let keyOn = 0.1 * canvas.width; // Key On starting position
+		let keyOff = 0.66 * canvas.width; // Key Off starting position
+
+		// Get references to the input elements
+		const r1Input = document.getElementById('r1Input');
+		const l1Input = document.getElementById('l1Input');
+		const r2Input = document.getElementById('r2Input');
+		const l2Input = document.getElementById('l2Input');
+		const r3Input = document.getElementById('r3Input');
+		const l3Input = document.getElementById('l3Input');
+		const r4Input = document.getElementById('r4Input');
+		const l4Input = document.getElementById('l4Input');
+
+		let eg = [
+			];
+
+		let selected='NONE';
+
+		function computeEGpos() {
+			// calcul du point 1
+		x[0]=0 ;
+		y[0]=L4;
+		// calcul du point 2
+		x[1]=keyOn;
+		y[1]=y[0];
+		// calcul du point 3
+		if(R1 > 98) { 
+			// on va à la verticale
+			x[2]=x[1];
+			y[2]=L1;
+		} else if(R1 < 1) {
+			// on reste à l'horizontale
+			x[2]=keyOff;
+			y[2]=y[1];
+		} else {
+			// OK, on doit tenir compte de R1
+			double tetha = R1 * toRadian;
+			double deltaX = keyOff-x[1]; // toujours positif
+			double deltaY = (L1-y[1]); // positif ou négatif
+			double incY = deltaX * Math.tan(tetha); //
+			if(incY > deltaY) {
+				// on atteind le niveau avant keyOff en cos(R1)
+				x[2]=(int)Math.round(deltaX * Math.cos(tetha));
+				y[2]=L1;
+			} else {
+				// on atteind keyOff avant le niveau en sin(R1)
+				x[2]=keyOff;
+				y[2]=(int)Math.round(deltaX * Math.sin(tetha));
+			}
+		}
+		// calcul du point 4
+		if(R2 > 98) {
+			// on va à la verticale, même si L1 n'est pas atteint
+			x[3]=x[2];
+			y[3]=L2;
+		} else if(R2 < 1) {
+			// on reste à l'horizontale, idem, même si L1 n'est pas encore atteint
+			x[3]=keyOff;
+			y[3]=y[2];
+		} else if(x[2] >= keyOff) {
+			// la touche est déjà relâchée
+			x[3]=x[2];
+			y[3]=y[2];
+		} else {
+			// OK, on doit tenir compte de R2
+			double tetha = R2 * toRadian;
+			double deltaX = keyOff-x[2]; // toujours positif
+			double deltaY = (L2-y[2]); // positif ou négatif
+			double incY = deltaX * Math.tan(tetha); //
+			if(incY > deltaY) {
+				// on atteint le niveau avant keyOff en cos(R2)
+				x[3]=x[2]+(int)Math.round(deltaX * Math.cos(tetha));
+				y[3]=L2;
+			} else {
+				// on atteint keyOff avant le niveau en sin(R2)
+				x[3]=keyOff;
+				y[3]=x[2]+(int)Math.round(deltaX * Math.sin(tetha));
+			}
+		}
+		// calcul du point 5
+		if(R3 > 98) {
+			// on va à la verticale, même si L2 n'est pas atteint
+			x[4]=x[3];
+			y[4]=L3;
+		} else if(R3 < 1) {
+			// on reste à l'horizontale, idem, même si L2 n'est pas encore atteint
+			x[4]=keyOff;
+			y[4]=y[3];
+		} else if(x[3] >= keyOff) {
+			// la touche est déjà relâchée
+			x[4]=x[3];
+			y[4]=y[3];
+		} else {
+			// OK, on doit tenir compte de R3
+			double tetha = R3 * toRadian;
+			double deltaX = keyOff-x[3]; // toujours positif
+			double deltaY = (L3-y[3]); // positif ou négatif
+			double incY = deltaX * Math.tan(tetha); //
+			if(incY > deltaY) {
+				// on atteind le niveau avant keyOff en cos(R3)
+				x[4]=x[3]+(int)Math.round(deltaX * Math.cos(tetha));
+				y[4]=L3;
+			} else {
+				// on atteind keyOff avant le niveau en sin(R3)
+				x[4]=keyOff;
+				y[4]=x[3]+(int)Math.round(deltaX * Math.sin(tetha));
+			}
+		}		
+
+
+
+
+
+
+
+
+
+
+		}
+
+
+		// Draw ADSR envelope
+		function drawADSR() {
+			ctx.clearRect(0, 0, width, height);
+
+			// Calculate positions
+			const r1x = keyOn + r1;
+			const r2x = r1x + r2;
+			const r3x = r2x + r3;
+			const r4x = keyOff + r4;
+
+			// Draw keyOn and keyOff vertical bars
+			ctx.strokeStyle = 'Aqua';
+			ctx.lineWidth = 1;
+			ctx.beginPath();
+			ctx.moveTo(keyOn, 0);
+			ctx.lineTo(keyOn, height);
+			ctx.stroke();
+
+			ctx.beginPath();
+			ctx.moveTo(keyOff, 0);
+			ctx.lineTo(keyOff, height);
+			ctx.stroke();
+
+			// Draw levels horizontal bars
+			ctx.strokeStyle = 'LimeGreen';
+			ctx.beginPath();
+			ctx.moveTo(0,l1y);
+			ctx.lineTo(width,l1y);
+			ctx.stroke();
+
+			ctx.beginPath();
+			ctx.moveTo(0,l2y); 
+			ctx.lineTo(width,l2y);
+			ctx.stroke();
+
+			ctx.beginPath();
+			ctx.moveTo(0,l3y);
+			ctx.lineTo(width,l3y);
+			ctx.stroke();
+
+			ctx.beginPath();
+			ctx.moveTo(0,l4y);
+			ctx.lineTo(width,l4y);
+			ctx.stroke();
+
+			// Draw the EG envelope
+			ctx.strokeStyle = 'Black';
+			ctx.lineWidth = 2;
+			ctx.beginPath();
+			ctx.moveTo(0,l4y);
+			ctx.lineTo(keyOn,l4y);
+			ctx.lineTo(r1x,l1y);
+			ctx.lineTo(r2x,l2y);
+			ctx.lineTo(r3x,l3y);
+			ctx.lineTo(keyOff,l3y);
+			ctx.lineTo(r4x,l4y);
+			ctx.lineTo(width,l4y);
+			ctx.stroke();
+
+			// Draw dots at the corresponding levels
+			drawDot('KEYON',keyOn,height);
+			drawDot('KEYOFF',keyOff,height);
+			drawDot('L1',0,l1y);
+			drawDot('L2',0,l2y);
+			drawDot('L3',0,l3y);
+			drawDot('L4',0,l4y);
+			drawDot('R1',r1x,l1y);
+			drawDot('R2',r2x,l2y);
+			drawDot('R3',r3x,l3y);
+			drawDot('R4',r4x,l4y);
+
+			// Update input values
+			updateInputValues();
+		}
+
+		// Function to draw a dot
+		function drawDot(handle,x,y) {
+			ctx.fillStyle=(handle===selected)?'Red':'Green';
+			ctx.beginPath();
+			ctx.arc(x,y,3,0,Math.PI*2);
+			ctx.fill();
+		}
+
+		// Function to update input values
+		function updateInputValues() {
+			r1Input.value=(height-r1).toFixed(2);
+			r2Input.value=(height-r2).toFixed(2);
+			r3Input.value=(height-r3).toFixed(2);
+			r4Input.value=(height-r4).toFixed(2);
+			l1Input.value=(height-l1y).toFixed(2);
+			l2Input.value=(height-l2y).toFixed(2);
+			l3Input.value=(height-l3y).toFixed(2);
+			l4Input.value=(height-l4y).toFixed(2);
+		}
+
+		// Function to calculate the distance between two points
+		function calculateDistance(x1, y1, x2, y2) {
+			return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+		}
+
+		// Mouse event handlers
+		function onMouseDown(event) {
+			const x = event.offsetX;
+			const y = event.offsetY;
+
+			// find the closest envelope point to the mouse between E1, E2, E3 and E4
+			dist1=Math(sqrt(
+			if (Math.abs(x - keyOn) < 5) {
+				selected='KEYON';
+			} else if (Math.abs(x - keyOff) < 5) {
+				selected='KEYOFF';
+			} else if (Math.abs(x - (keyOn + r1)) < 5) {
+				selected='R1';
+			} else if (Math.abs(x - (keyOn + r1 + r2)) < 5) {
+				selected='R2';
+			} else if (Math.abs(x - (keyOn + r1 + r2 + r3)) < 5) {
+				selected='R3';
+			} else if (Math.abs(x - (keyOff + r4)) < 5) {
+				selected='R4';
+			} else if (Math.abs(y - l1y) < 5) {
+				selected='L1';
+			} else if (Math.abs(y - l2y) < 5) {
+				selected='L2';
+			} else if (Math.abs(y - l3y) < 5) {
+				selected='L3';
+			} else if (Math.abs(y - l4y) < 5) {
+				selected='L4';
+			}
+		}
+
+		function onMouseMove(event) {
+			const x = event.offsetX;
+			const y = event.offsetY;
+
+		if(selected==='NONE') return;
+			switch(selected) {
+		case 'KEYON':
+					keyOn = x;
+					if (keyOn < 0) keyOn = 0;
+					if (keyOn > width) keyOn = width;
+			break;
+		case 'KEYOFF':
+					keyOff = x;
+					if (keyOff < 0) keyOff = 0;
+					if (keyOff > width) keyOff = width;
+			break;
+		case 'R1':
+					r1 = x - keyOn;
+					if (r1 < 0) r1 = 0;
+					if (keyOn + r1 > width) r1 = width - keyOn;
+			break;
+		case 'R2':
+					r2 = x - keyOn - r1;
+					if (r2 < 0) r2 = 0;
+					if (keyOn + r1 + r2 > width) r2 = width - keyOn - r1;
+			break;
+		case 'R3':
+					r3 = x - keyOn - r1 - r2;
+					if (r3 < 0) r3 = 0;
+					if (keyOn + r1 + r2 + r3 > width) r3 = width - keyOn - r1 - r2;
+			break;
+		case 'R4':
+					r4 = x - keyOff;
+					if (r4 < 0) r4 = 0;
+					if (keyOff + r4 > width) r4 = width - keyOff ;
+			break;
+		case 'L1':
+					l1y = y;
+					if (l1y < 0) l1y = 0;
+					if (l1y > height) l1y = height;
+			break;
+		case 'L2':
+					l2 = y;
+					if (l2 < 0) l2 = 0;
+					if (l2 > height) l2 = height;
+			break;
+		case 'L3':
+					l3 = y;
+					if (l3 < 0) l3 = 0;
+					if (l3 > height) l3 = height;
+			break;
+		case 'L4':
+					l4 = y;
+					if (l4 < 0) l4 = 0;
+					if (l4 > height) l4 = height;
+			break;
+		default:
+			break;
+			}
+			drawADSR();
+		}
+
+		function onMouseUp(event) {
+			selected='NONE';
+		}
+
+		canvas.addEventListener('mousedown', onMouseDown);
+		canvas.addEventListener('mousemove', onMouseMove);
+		canvas.addEventListener('mouseup', onMouseUp);
+
+		drawADSR();
+	</script>
+</body>
+</html>
