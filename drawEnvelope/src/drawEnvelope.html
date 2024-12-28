@@ -53,7 +53,7 @@
 		// Canvas dimensions
 		const width = canvas.width;
 		const height = canvas.height;
-		const toRadian = Math.PI/198;
+		const toRadian = Math.PI / 198;
 
 		// Get references to the input elements
 		const r1Input = document.getElementById('r1Input');
@@ -96,12 +96,12 @@
 				let incY = deltaX * Math.tan(tetha); //
 				if(incY > deltaY) {
 					// on atteint le niveau avant keyOff en cos(R1)
-					x[2]=Math.round(deltaX * Math.cos(tetha));
+					x[2]=x[1]+Math.round(deltaX * Math.cos(tetha));
 					y[2]=l1Input.value;
 				} else {
 					// on atteint keyOff avant le niveau en sin(R1)
 					x[2]=keyOff;
-					y[2]=Math.round(deltaX * Math.sin(tetha));
+					y[2]=x[1]+Math.round(deltaX * Math.sin(tetha));
 				}
 			}
 			// calcul du point 4
@@ -161,7 +161,11 @@
 					x[4]=keyOff;
 					y[4]=x[3]+Math.round(deltaX * Math.sin(tetha));
 				}
-			}		
+			}
+			// calcul du point 6, en principe horizontal jusqu'au keyOff
+			x[5]=keyOff;
+			y[5]=y[4];
+			// calcul du point 7, basé sur R4 vers L4
 		}
 
 
@@ -195,8 +199,8 @@
 			ctx.lineTo(x[4],y[4]);
 			ctx.lineTo(x[5],y[5]);
 			ctx.lineTo(x[6],y[6]);
+			ctx.lineTo(x[7],y[7]);
 			ctx.stroke();
-
 			// Update input values
 			updateInputValues();
 		}
@@ -211,14 +215,14 @@
 
 		// Function to update input values
 		function updateInputValues() {
-			r1Input.value=99;
-			r2Input.value=99;
-			r3Input.value=99;
-			r4Input.value=99;
-			l1Input.value=99;
-			l2Input.value=99;
+			r1Input.value=90;
+			r2Input.value=60;
+			r3Input.value=30;
+			r4Input.value=42;
+			l1Input.value=70;
+			l2Input.value=85;
 			l3Input.value=99;
-			l4Input.value=0;
+			l4Input.value=10;
 		
 		}
 

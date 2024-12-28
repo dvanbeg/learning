@@ -14,14 +14,14 @@ public class drawEG {
 		int keyOff=(int)Math.round(width * 0.66);
 		double toRadian = Math.PI / 2 / 99 ;
 		// enveloppe initiale
-		int R1=55;
-		int L1=99;
-		int R2=35;
-		int L2=99;
-		int R3=15;
+		int R1=90;
+		int L1=70;
+		int R2=60;
+		int L2=85;
+		int R3=30;
 		int L3=99;
-		int R4=99;
-		int L4=0;
+		int R4=42;
+		int L4=10;
 		
 		// calcul du point 1
 		x[0]=0 ;
@@ -46,12 +46,12 @@ public class drawEG {
 			double incY = deltaX * Math.tan(tetha); //
 			if(incY > deltaY) {
 				// on atteind le niveau avant keyOff en cos(R1)
-				x[2]=(int)Math.round(deltaX * Math.cos(tetha));
+				x[2]=x[1]+(int)Math.round(deltaX * Math.cos(tetha));
 				y[2]=L1;
 			} else {
 				// on atteind keyOff avant le niveau en sin(R1)
 				x[2]=keyOff;
-				y[2]=(int)Math.round(deltaX * Math.sin(tetha));
+				y[2]=x[1]+(int)Math.round(deltaX * Math.sin(tetha));
 			}
 		}
 		// calcul du point 4
