@@ -166,6 +166,36 @@
 			x[5]=keyOff;
 			y[5]=y[4];
 			// calcul du point 7, basé sur R4 vers L4
+			if(r4Input.value > 98) {
+				// on va à la verticale, vers L4 sans bouger en X, donc keyOff
+				x[6]=x[5];
+				y[6]=l4Input.value;
+			} else if(r4Input.value < 1) {
+				// on reste à l'horizontale, mais c'est un cas bizarre ou on risque de ne pas rejoindre L4 ?
+				// par défaut priorité est donnée au L4 même si R4=0
+				x[6]=x[5];
+				y[6]=l4Input.value;
+			} else {
+				// OK, on doit tenir compte de R4
+				let tetha = r4Input.value * toRadian;
+				// comme keyOff ne joue plus aucun rôle ici, pour le besoin du dessin on considère la largeur du canvas
+				let deltaX = width - x[5];
+				let deltaY = (l4Input.value-y[5]); // positif ou négatif
+				let incY = deltaX * Math.tan(tetha); //
+				if(incY > deltaY) {
+					// on atteind le niveau avant le bord du dessin en cos(R4)
+					x[6]=x[5]+Math.round(deltaX * Math.cos(tetha));
+					y[6]=l4Input.value;
+				} else {
+					// on atteind keyOff avant le niveau L4 en sin(R4)
+					x[6]=width;
+					y[6]=x[5]+Math.round(deltaX * Math.sin(tetha));
+				}
+			}
+			// calcul du dernier point 7, contre le bord droit en L4
+			x[7]=width
+			y[7]=l4Input.value;
+	
 		}
 
 
@@ -218,7 +248,7 @@
 			r1Input.value=90;
 			r2Input.value=60;
 			r3Input.value=30;
-			r4Input.value=42;
+			r4Input.value=25;
 			l1Input.value=70;
 			l2Input.value=85;
 			l3Input.value=99;
