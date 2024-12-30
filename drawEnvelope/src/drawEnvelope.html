@@ -36,7 +36,7 @@
 </head>
 <body>
 <p/>
-	<canvas id="adsrCanvas" width="640" height="480"></canvas>
+	<canvas id="adsrCanvas" width="1024" height="768"></canvas>
 	<div class="controls">
 		<div class="control-group"><label for="r1Input">R1</label><input type="text" id="r1Input" readonly></div>
 		<div class="control-group"><label for="r2Input">R2</label><input type="text" id="r2Input" readonly></div>
@@ -66,8 +66,8 @@
 		const l4Input = document.getElementById('l4Input');
 
 		// ADSR envelope parameters
-		let keyOn = 0.1 * canvas.width; // Key On starting position
-		let keyOff = 0.66 * canvas.width; // Key Off starting position
+		let keyOn = 0.5 * canvas.width; // Key On starting position
+		let keyOff = 0.6 * canvas.width; // Key Off starting position
 		let x = [];
 		let y = [];
 		let selected='NONE';
@@ -245,10 +245,10 @@
 
 		// Function to update input values
 		function updateInputValues() {
-			r1Input.value=90;
-			r2Input.value=60;
-			r3Input.value=30;
-			r4Input.value=25;
+			r1Input.value=94;
+			r2Input.value=80;
+			r3Input.value=10;
+			r4Input.value=55;
 			l1Input.value=70;
 			l2Input.value=85;
 			l3Input.value=99;
